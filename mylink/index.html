@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>치이카와 친구들의 집 짓기</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            font-family: 'Jua', sans-serif;
+            background-color: #fff0f5;
+            color: #4a3b32;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #ff6b9d;
+            text-shadow: 2px 2px 0px #fff;
+            margin-bottom: 12px;
+            font-size: 30px;
+        }
+
+        .top-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .status-panel {
+            display: flex;
+            gap: 18px;
+            background: #fff;
+            border: 3px solid #ff9ebb;
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-size: 19px;
+            box-shadow: 0 4px 10px rgba(255, 158, 187, 0.2);
+        }
+
+        .char-select {
+            display: flex;
+            gap: 8px;
+            background: #fff;
+            border: 3px solid #ff9ebb;
+            border-radius: 25px;
+            padding: 6px 15px;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .char-btn {
+            font-family: 'Jua', sans-serif;
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: 2px solid #ffc2d1;
+            background: #fff5f8;
+            color: #4a3b32;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: none;
+            transition: all 0.15s;
+        }
+
+        .char-btn.active {
+            background: #ff7aa2;
+            color: #fff;
+            border-color: #ff7aa2;
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        canvas {
+            background: #b7e4c7;
+            border: 4px solid #74c69d;
+            border-radius: 25px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        .control-panel {
+            background: #fff;
+            border: 4px solid #ff9ebb;
+            border-radius: 25px;
+            padding: 22px;
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .control-panel h3 {
+            margin: 0 0 4px 0;
+            color: #ff6b9d;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        .action-btn {
+            font-family: 'Jua', sans-serif;
+            font-size: 17px;
+            padding: 13px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            color: #fff;
+            background: #ff7aa2;
+            box-shadow: 0 4px 0 #d9537f;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .action-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #d9537f;
+        }
+
+        .action-btn:disabled {
+            background: #ffe5ec !important;
+            color: #ffb3c6 !important;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .guide-box {
+            background: #fff0f5;
+            padding: 14px;
+            border-radius: 15px;
+            font-size: 15px;
+            color: #6d4c55;
+            line-height: 1.6;
+        }
+
+        .status-msg {
+            background: #fff8fa;
+            border: 2px dashed #ffc2d1;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 15px;
+            text-align: center;
+            color: #ff6b9d;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🌸 치이카와 친구들의 숲속 집 짓기 🌸</h1>
+    
+    <div class="top-bar">
+        <div class="status-panel">
+            <div>🪵 나뭇가지: <span id="woodCount">0</span>개</div>
+            <div>🪨 돌멩이: <span id="stoneCount">0</span>개</div>
+            <div>🌰 도토리: <span id="acornCount">0</span>개</div>
+        </div>
+
+        <div class="char-select">
+            <span>캐릭터 선택:</span>
+            <button class="char-btn" id="btnHachi" onclick="selectChar('hachiware')">하치와레</button>
+            <button class="char-btn active" id="btnChii" onclick="selectChar('chiikawa')">치이카와</button>
+            <button class="char-btn" id="btnUsagi" onclick="selectChar('usagi')">우사기</button>
+        </div>
+    </div>
+
+    <div class="game-wrapper">
+        <canvas id="gameCanvas" width="520" height="420"></canvas>
+
+        <div class="control-panel">
+            <h3>🏗️ 건축 작업대</h3>
+            <div class="guide-box">
+                <b>🎮 조작 방법</b><br>
+                • 이동: 방향키 (← ↑ ↓ →)<br>
+                • 채집: 자원 근처에서 <b>Space바</b>!
+            </div>
+
+            <button class="action-btn" id="btnBuild1" onclick="craftItem(1)">🏠 1단계: 벽과 바닥 (나무 5, 돌 5)</button>
+            <button class="action-btn" id="btnBuild2" onclick="craftItem(2)" disabled>🏡 2단계: 핑크 지붕 (나무 10, 돌 5)</button>
+            <button class="action-btn" id="btnBuild3" onclick="craftItem(3)" disabled>🎉 3단계: 완성 파티! (도토리 10)</button>
+            
+            <div class="status-msg" id="statusMsg">열심히 자원을 모아보자! 에잇!</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let selectedChar = 'chiikawa';
+
+        function selectChar(charName) {
+            selectedChar = charName;
+            document.getElementById('btnHachi').classList.remove('active');
+            document.getElementById('btnChii').classList.remove('active');
+            document.getElementById('btnUsagi').classList.remove('active');
+
+            if (charName === 'hachiware') document.getElementById('btnHachi').classList.add('active');
+            if (charName === 'chiikawa') document.getElementById('btnChii').classList.add('active');
+            if (charName === 'usagi') document.getElementById('btnUsagi').classList.add('active');
+        }
+
+        let player = {
+            x: 70,
+            y: 210,
+            speed: 3.5
+        };
+
+        let inventory = { wood: 0, stone: 0, acorn: 0 };
+        let houseStage = 0; 
+
+        let resources = [
+            { type: 'wood', x: 110, y: 80, label: '🌲 나무', bg: '#d8f3dc', border: '#52b788', collected: false },
+            { type: 'wood', x: 420, y: 75, label: '🌲 나무', bg: '#d8f3dc', border: '#52b788', collected: false },
+            { type: 'stone', x: 90, y: 340, label: '🪨 돌', bg: '#e9ecef', border: '#adb5bd', collected: false },
+            { type: 'stone', x: 430, y: 330, label: '🪨 돌', bg: '#e9ecef', border: '#adb5bd', collected: false },
+            { type: 'acorn', x: 250, y: 200, label: '🌰 도토리', bg: '#ffedd8', border: '#e6ccb2', collected: false },
+            { type: 'wood', x: 350, y: 240, label: '🌲 나무', bg: '#d8f3dc', border: '#52b788', collected: false },
+            { type: 'stone', x: 210, y: 350, label: '🪨 돌', bg: '#e9ecef', border: '#adb5bd', collected: false },
+            { type: 'acorn', x: 420, y: 190, label: '🌰 도토리', bg: '#ffedd8', border: '#e6ccb2', collected: false }
+        ];
+
+        let keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                tryGather();
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        function updatePlayer() {
+            if ((keys['ArrowLeft'] || keys['KeyA']) && player.x > 30) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['KeyD']) && player.x < canvas.width - 30) player.x += player.speed;
+            if ((keys['ArrowUp'] || keys['KeyW']) && player.y > 35) player.y -= player.speed;
+            if ((keys['ArrowDown'] || keys['KeyS']) && player.y < canvas.height - 30) player.y += player.speed;
+        }
+
+        function tryGather() {
+            resources.forEach(res => {
+                if (!res.collected) {
+                    let dist = Math.hypot(player.x - res.x, player.y - res.y);
+                    if (dist < 50) {
+                        res.collected = true;
+                        if (res.type === 'wood') inventory.wood++;
+                        if (res.type === 'stone') inventory.stone++;
+                        if (res.type === 'acorn') inventory.acorn++;
+                        updateDisplay();
+                        setTimeout(() => { res.collected = false; }, 4500);
+                    }
+                }
+            });
+        }
+
+        function updateDisplay() {
+            document.getElementById('woodCount').innerText = inventory.wood;
+            document.getElementById('stoneCount').innerText = inventory.stone;
+            document.getElementById('acornCount').innerText = inventory.acorn;
+
+            if (houseStage === 0 && inventory.wood >= 5 && inventory.stone >= 5) {
+                document.getElementById('btnBuild1').disabled = false;
+            }
+            if (houseStage === 1 && inventory.wood >= 10 && inventory.stone >= 5) {
+                document.getElementById('btnBuild2').disabled = false;
+            }
+            if (houseStage === 2 && inventory.acorn >= 10) {
+                document.getElementById('btnBuild3').disabled = false;
+            }
+        }
+
+        function craftItem(stage) {
+            if (stage === 1 && houseStage === 0) {
+                inventory.wood -= 5; inventory.stone -= 5;
+                houseStage = 1;
+                document.getElementById('btnBuild1').disabled = true;
+                document.getElementById('statusMsg').innerText = "벽과 바닥 완성! 지붕을 지어봐!";
+            } else if (stage === 2 && houseStage === 1) {
+                inventory.wood -= 10; inventory.stone -= 5;
+                houseStage = 2;
+                document.getElementById('btnBuild2').disabled = true;
+                document.getElementById('statusMsg').innerText = "지붕 완성! 도토리를 모아 파티를 열자!";
+            } else if (stage === 3 && houseStage === 2) {
+                inventory.acorn -= 10;
+                houseStage = 3;
+                document.getElementById('btnBuild3').disabled = true;
+                document.getElementById('statusMsg').innerText = "🎉 축하해! 집 대완성 파티 중!! 🥳";
+            }
+            updateDisplay();
+        }
+
+        function drawHouse() {
+            if (houseStage >= 1) {
+                ctx.fillStyle = "#fffdf9";
+                ctx.fillRect(340, 110, 120, 90);
+                ctx.strokeStyle = "#4a3b32";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(340, 110, 120, 90);
+
+                ctx.fillStyle = "#d4a373";
+                ctx.fillRect(380, 145, 40, 55);
+                ctx.strokeRect(380, 145, 40, 55);
+            }
+            if (houseStage >= 2) {
+                ctx.fillStyle = "#ff8fab";
+                ctx.beginPath();
+                ctx.moveTo(320, 110);
+                ctx.lineTo(400, 40);
+                ctx.lineTo(480, 110);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+            if (houseStage >= 3) {
+                ctx.font = "24px 'Jua', sans-serif";
+                ctx.fillText("✨🎊 대완성! 🎊✨", 335, 30);
+            }
+        }
+
+        function drawResources() {
+            resources.forEach(res => {
+                if (!res.collected) {
+                    ctx.font = "18px 'Jua', sans-serif";
+                    const textWidth = ctx.measureText(res.label).width;
+                    const boxW = textWidth + 18;
+                    const boxH = 30;
+                    const boxX = res.x - boxW / 2;
+                    const boxY = res.y - boxH / 2;
+
+                    ctx.fillStyle = res.bg;
+                    ctx.strokeStyle = res.border;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.roundRect(boxX, boxY, boxW, boxH, 15);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = "#4a3b32";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(res.label, res.x, res.y + 1);
+                }
+            });
+            ctx.textAlign = "start";
+            ctx.textBaseline = "alphabetic";
+        }
+
+        function drawCharacter(x, y) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = "#2b2118";
+
+            if (selectedChar === 'usagi') {
+                // 우사기 긴 귀
+                ctx.fillStyle = "#fff3b0";
+                ctx.beginPath();
+                ctx.ellipse(-8, -32, 5, 16, -0.1, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+                ctx.beginPath();
+                ctx.ellipse(8, -32, 5, 16, 0.1, 0, Math.PI * 2);
+                ctx.fill(); ctx.stroke();
+
+                // 귀 안쪽 핑크
+                ctx.fillStyle = "#ffcad4";
+                ctx.beginPath();
+                ctx.ellipse(-8, -32, 2.5, 10, -0.1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(8, -32, 2.5, 10, 0.1, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (selectedChar === 'hachiware') {
+                // 하치와레 뾰족 귀
+                ctx.fillStyle = "#74a9cf";
+                ctx.beginPath();
+                ctx.moveTo(-22, -10); ctx.lineTo(-18, -28); ctx.lineTo(-4, -18);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(22, -10); ctx.lineTo(18, -28); ctx.lineTo(4, -18);
+                ctx.closePath(); ctx.fill(); ctx.stroke();
+            } else {
+                // 치이카와 둥근 귀
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath(); ctx.arc(-15, -19, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(15, -19, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            }
+
+            // 얼굴 동그라미
+            ctx.fillStyle = (selectedChar === 'usagi') ? "#fff3b0" : "#ffffff";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 24, 21, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // 하치와레 파란 앞머리 (가르마)
+            if (selectedChar === 'hachiware') {
+                ctx.fillStyle = "#74a9cf";
+                ctx.beginPath();
+                ctx.arc(0, -2, 23, Math.PI * 1.1, Math.PI * 1.9);
+                ctx.quadraticCurveTo(8, -8, 0, -13);
+                ctx.quadraticCurveTo(-8, -8, -21, -7);
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            // 볼터치
+            ctx.fillStyle = "#ffafcc";
+            ctx.beginPath(); ctx.ellipse(-14, 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(14, 4, 5, 3, 0, 0, Math.PI * 2); ctx.fill();
+
+            // 눈
+            ctx.fillStyle = "#2b2118";
+            ctx.beginPath(); ctx.arc(-8, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(8, -2, 2.5, 0, Math.PI * 2); ctx.fill();
+
+            // 눈 반짝임
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath(); ctx.arc(-9, -3, 1, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(7, -3, 1, 0, Math.PI * 2); ctx.fill();
+
+            // 입 (ω 모양)
+            ctx.strokeStyle = "#2b2118";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(-2.5, 4, 2.5, 0, Math.PI);
+            ctx.arc(2.5, 4, 2.5, 0, Math.PI);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawHouse();
+            drawResources();
+            updatePlayer();
+            drawCharacter(player.x, player.y);
+
+            requestAnimationFrame(draw);
+        }
+
+        draw();
+    </script>
+</body>
+</html>
